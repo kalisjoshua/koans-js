@@ -1,0 +1,51 @@
+#editor {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+}
+
+*, *:after, *:before { box-sizing: inherit; }
+
+html, body {
+  box-sizing: border-box;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+article, aside { position: relative; }
+
+section {
+  align-items: stretch;
+  display: flex;
+  min-height: 100%;
+}
+
+section > * {
+  flex: 1 0 50%;
+}
+
+.codez { flex: 1 0 calc(50% - 20ex); }
+.files { flex: 0 0 40ex; }
+.tests {
+  flex: 1 0 calc(50% - 20ex);
+  padding: 0 1em;
+}
+
+.files ul {
+  margin: 0;
+  padding: 0;
+}
+
+.files ul li {
+  list-style: none;
+  margin: 0;
+  padding: 4px 1ex;
+}
+
+.files ul li:hover {
+  background: lightBlue;
+  cursor: pointer;
+}
