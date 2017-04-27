@@ -27,21 +27,21 @@ main > * {
   flex: 1 0 50%;
 }
 
-.active p {
-  display: none;
+.active {}
+
+.btn-begin {
+  background: cornflowerBlue;
+  border-radius: 12px;
+  cursor: pointer;
+  display: block;
+  font-weight: bold;
+  margin: 0 auto;
+  padding: 2ex 3ex;
+  text-align: center;
+  transition: 200ms;
 }
 
-.collapse--handle { cursor: pointer; }
-.collapse--handle:after {
-  color: gainsboro;
-  content: '\00d7';
-  cursor: pointer;
-  float: right;
-}
-.collapse--handle:hover:after { color: black; }
-.collapse--closed .collapse--handle { font-size: 1em; margin: 0; }
-.collapse--closed .collapse--handle:after { content: '+'; }
-.collapse--closed .collapse--content { display: none; }
+.btn-begin:hover { background: lightBlue; }
 
 .code { flex: 1 0 50%; }
 .content {
@@ -58,21 +58,14 @@ main > * {
 }
 
 .koan h3 {
-  cursor: pointer;
   font-size: 1em;
   margin: 0;
   padding: 0.5ex 0;
 }
 
-.koan h3:after {
-  content: '(start)';
-  float: right;
-  opacity: 0.2;
-  transition: 200ms;
-}
-.koan h3:hover:after { opacity: 1; }
-
 .koan + .koan { margin-top: 1px; }
+
+.results { display: none; }
 
 [class*="test"] {
   background: white;
@@ -106,3 +99,10 @@ h3 { font-size: 1.35em; }
 h4 { font-size: 1.25em; }
 h5 { font-size: 1.15em; }
 h6 { font-size: 1em; }
+
+.walking-the-path h1 {
+  font-size: 1em;
+  margin: 1ex 0;
+}
+.walking-the-path h2 { display: none; }
+.walking-the-path .results { display: block; }

@@ -71,12 +71,11 @@
 	}
 
 	function init(list) {
-		const editor = ace.edit('editor')
-
-		editor.setTheme('ace/theme/monokai')
-		editor.getSession().setMode('ace/mode/javascript')
-		editor.$blockScrolling = Infinity // silence console warning message
-		editor.on('change', debounce.call(editor, change))
+		koans.editor = ace.edit('editor')
+		koans.editor.setTheme('ace/theme/monokai')
+		koans.editor.getSession().setMode('ace/mode/javascript')
+		koans.editor.$blockScrolling = Infinity // silence console warning message
+		koans.editor.on('change', debounce.call(koans.editor, change))
 
 		koans.list = list
 		koans.indx = list
@@ -85,16 +84,6 @@
 
 				return acc
 			}, {})
-
-		$(document.body)
-			.on('click', '[data-koan]', event => {
-				const koan = event.target.dataset.koan
-
-				if (koan !== koans.active) {
-					koans.active = koan
-					editor.setValue(koans.indx[koan], 1)
-				}
-			})
 
 		results()
 	}
@@ -210,11 +199,23 @@
 		.into(koans => koans.map(name => fetcher(`koans/${name}.js`)))
 		.into(koans => Promise.all(koans).then(init))
 
-	$('.collapse--handle')
+	$('.btn-begin')
 		.on('click', function () {
-			$(this)
-				.closest('.collapse--wrapper')
-				.toggleClass('collapse--closed')
+			$(document.body).addClass('walking-the-path')
+			$('.content > section').slideUp()
+			$(this).remove()
+
+			const koan = koans.list[0].path
+
+			koans.active = koan
+			koans.editor.setValue(koans.indx[koan], 1)
+
+			// http://koans#/{name}/{number}
+			// make section headings navigate to that "file"
+			// editing the koan to make it pass moves to the next one
+			// check for repeat tries and change messaging; the first execution should
+			// not seem like an attempt but after changing something should
+			throw new Error('Make navigation via the URL work with hash-values')
 		})
 }([
 	'basics',
