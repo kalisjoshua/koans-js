@@ -1,170 +1,245 @@
-const assert = QUnit.assert;
-const module = QUnit.module;
-const test = QUnit.test;
+(function (pathToEnlightenment) {
+	'use strict'
 
-var __ = "incomplete";
+	const koans = {}
 
-// ignore this. It simplifies determining array equality
-Array.prototype.equalTo = function(compareTo) {
-	if (this.length !== compareTo.length) {
-		return false;
-	}
-	for(var i = 0; i < compareTo.length; i++) {
-		if (this[i] !== compareTo[i]) {
-			return false;
-		}
-	}
-	return true;
-};
+	const koanTitle = str =>
+		str
+			.replace(/^.*\/|\.js$/g, '')
+			.split(/_/)
+			.map(str => `${str.slice(0, 1).toUpperCase()}${str.slice(1)}`)
+			.join(' ')
 
-(function() {
+	const saySomethingZen = (function () {
+		const quotes = [
+			"The path to enlightenment has many stones.",
+			"Enlightenment comes with perseverance.",
+			"The only Zen you find on mountaintops is the Zen you bring there.",
+			"Be master of mind rather than mastered by mind.",
+			"The reward of all action is to be found in enlightenment.",
+			"The real meaning of enlightenment is to gaze with undimmed eyes on all darkness.",
+			"Do not think you will necessarily be aware of your own enlightenment.",
+			"Enlightenment must come little by little - otherwise it would overwhelm.",
+			"Enlightenment is ego's ultimate disappointment.",
+			"You suffer only because you take seriously what the gods made for fun.",
+			"No snowflake ever falls in the wrong place.",
+			"Failure is an opportunity to succeed.",
+			"The root of suffering is attachment.",
+			"Worrying doesn't take away tomorrow's troubles, it takes away today's peace.",
+			"Let's make better mistakes tomorrow.",
+			"The harder the struggle the more glorious the triumph.",
+			"The struggle you're in today is developing the strength you need for tomorrow.",
+			"Starve your distractions and feed your focus.",
+			"The smallest step toward your goal is better than the greatest intention.",
+			"It always seems impossible until it's done.",
+			"To change reality let reality change you.",
+			"We don't learn by doing we learn by reflecting on what we've done.",
+			"A negative mind will never give you a positive life.",
+		]
 
-	var lastAssertLogReason, ignoreFurtherFailures = false;
-	var zenMessages = [
-		"The path to enlightenment has many stones",
-		"Do not stray from your path, for enlightenment comes with perseverance",
-		"The only Zen you find on tops of mountains is the Zen you bring there",
-		"Enlightenment occurs when someone becomes inspired by information and uses it to enhance their life",
-		"Be master of mind rather than mastered by mind",
-		"Zen is not some kind of excitement, but concentration on our usual everyday routine",
-		"I think self-awareness is probably the most important thing towards being a champion",
-		"The reward of all action is to be found in enlightenment",
-		"lasting enlightenment can be achieved only through persistent exercise of real love",
-		"The real meaning of enlightenment is to gaze with undimmed eyes on all darkness",
-		"Do not think you will necessarily be aware of your own enlightenment",
-		"Enlightenment must come little by little - otherwise it would overwhelm",
-		"The greatest gift is to give people your enlightenment, to share it. It has to be the greatest",
-		"In the beginner's mind there are many possibilities, but in the expert's mind there are few",
-		"Only the hand that erases can write the true thing",
-		"Enlightenment is ego's ultimate disappointment",
-		"Man suffers only because he takes seriously what the gods made for fun",
-		"It is easy to believe we are each waves and forget we are also the ocean",
-		"Working out is my biggest hobby. It's my Zen hour. I just zone out",
-		"A self-motivation is an enlightenment of mind, empowerment of heart and enrichment of soul to arise, awake and ascend to achieve the noble and coveted goal even if it entails walking on its enervating path all alone"
-	];
+		return () => quotes[parseInt(Math.random() * quotes.length, 10)]
+	}())
 
-	QUnit.config.reorder = false;
+	const pipe = (...args) => ({
+	  into: (fn, ...more) => pipe(fn(...args.concat(more))),
+	  value: args[0],
+	})
 
-	QUnit.done(function(results) {
-		var failures = results.failed;
-		var total = results.total;
-		if (failures > 0) {
-			var failed = $('ol#qunit-tests > li.fail');
-			failed.hide();
-			$(failed[0]).show();
-		}
-		if (failures < total) {
-			$('h3.welcome_message').hide();
-		}
-		if (failures > 0) {
-			$("#zen-help").show();
-		}
-		$("body").scrollTop($(document).height());
-	});
+	function change(event) {
+		const value = this.getValue()
 
-	QUnit.log(function(result) {
-		lastAssertLogReason = result.message;
-	});
-
-	QUnit.testDone(function(result) {
-		var message;
-		if (!ignoreFurtherFailures && result.failed > 0) {
-			ignoreFurtherFailures = true;
-			message = "" + randomZenMessage() + "\nTry meditating on this: " + result.module + ": " + result.name + " (" + lastAssertLogReason + ")";
-			$("#zen-help").html(message.replace(/\n/g, "<br /><br />"));
-			console.log(message);
-		}
-	});
-
-	function randomZenMessage() {
-		var randomIndex = Math.floor(Math.random() * zenMessages.length);
-		var zenMessage = zenMessages[randomIndex];
-		zenMessage = zenMessage.charAt(0).toUpperCase() + zenMessage.substr(1);
-		return "" + zenMessage + ".";
+		koans.indx[koans.active] = value
+		runner(value)
 	}
 
-})();
+	function debounce(fn, delay = 300, global = window) {
+	  const context = this
+	  let pending
 
-$(function () {
-	const koans = [
-		"koans/about_asserts.js",
-		"koans/about_operators.js",
-		"koans/about_equality.js",
-		// "koans/about_truthyness.js",
-		// "koans/about_assignment.js",
-		// "koans/about_control_structures.js",
-		// "koans/about_strings.js",
-		// "koans/about_numbers.js",
-		// "koans/about_objects.js",
-		// "koans/about_arrays.js",
-		// "koans/about_reflection.js",
-		// "koans/about_prototype_chain.js",
-		// "koans/about_prototypal_inheritance.js",
-		// "koans/about_functions_and_closure.js",
-		// "koans/about_this.js",
-		// "koans/about_scope.js",
-		// "koans/about_regular_expressions.js",
-	];
+		return (...args) => {
+				if (pending) global.clearTimeout(pending)
+
+				pending = global.setTimeout(fn.bind(context, ...args), delay)
+			}
+	}
 
 	function fetcher(path) {
 
 		return fetch(path)
 			.then(res => res.text())
-			.then(body => ({ body, path }));
+			.then(body => ({ body, path }))
 	}
 
-	Promise
-		.all(koans.map(fetcher))
-		.then(start);
-});
+	function init(list) {
+		const editor = ace.edit('editor')
 
-function debounce(fn, delay = 300, global = window) {
-  const context = this;
-  let pending;
+		editor.setTheme('ace/theme/monokai')
+		editor.getSession().setMode('ace/mode/javascript')
+		editor.$blockScrolling = Infinity // silence console warning message
+		editor.on('change', debounce.call(editor, change))
 
-  function debounced(...args) {
-    if (pending) {
-      global.clearTimeout(pending);
-    }
+		koans.list = list
+		koans.indx = list
+			.reduce((acc, koan) => {
+				acc[koan.path] = koan.body
 
-    pending = global.setTimeout(fn.bind(context, ...args), delay);
-  }
+				return acc
+			}, {})
 
-  return debounced;
-}
+		$(document.body)
+			.on('click', '[data-koan]', event => {
+				const koan = event.target.dataset.koan
 
-function onChange(event, obj) {
-	const execution = new Function(this.getValue());
-	reset();
-	execution();
-}
+				if (koan !== koans.active) {
+					koans.active = koan
+					editor.setValue(koans.indx[koan], 1)
+				}
+			})
 
-function reset() {
-	$('#qunit-tests').remove();
-	$('.tests')
-		.append('<ol id="qunit-tests"></ol>');
-}
+		results()
+	}
 
-function start(koansList) {
-	const editor = ace.edit("editor");
+	function koansReport({ key, title }, report) {
+		const encouragement = `; is blocking your from enlightenment. ${saySomethingZen()}`
 
-	editor.setTheme("ace/theme/monokai");
-	editor.getSession().setMode("ace/mode/javascript");
+		const message = ({comment, passing, title}) =>
+			title
+				.replace(/\.$/, passing ? '.' : encouragement)
 
-	const koans = koansList
-		.reduce((acc, koan) => {
-			acc[koan.path] = koan.body;
+		return `
+			<section class="koan ${key === koans.active ? 'active': ''}">
+				<h3 data-koan="${key}">${title}</h3>
+				${report
+					.map(t => `<div class="test--${t.passing ? 'passing' : 'failing'}">${message(t)}</div>`)
+					.join('')}
+			</section>
+		`
+	}
 
-			return acc;
-		}, {});
+	function results(report) {
+		const include = ({ key }) =>
+			key === koans.active ? report : []
 
-	const menu = Object.keys(koans)
-		.sort()
-		.map(item => `<li>${item}</li>`);
+		pipe(koans.list)
+			.into(list => list
+				.map(koan => ({ key: koan.path, title: koanTitle(koan.path) }))
+				.map(item => koansReport(item, include(item))))
+			.into(koans => $('.results').empty().append(koans))
+	}
 
-	$('.files ul')
-		.append(menu);
+	function runner(source) {
+		pipe(testScope.toString())
+			.into(fn => fn.split(/\n/).slice(1, -1).join('\n'))
+			.into(body => body.replace('// source', source))
+			.into(body => new Function(body))
+			.into(fn => results(fn()))
+	}
 
-	editor.setValue(koansList[0].body, false);
-	editor.on('change', debounce.call(editor, onChange));
-}
+	function testScope() {
+		const __ = void 0
+		const allTests = []
+
+		const slice = Function.prototype.call.bind(Array.prototype.slice)
+		const type = Function.prototype.call.bind(Object.prototype.toString)
+
+		function assert(...args) {
+		  const [a, b] = args
+		  const last = args.slice(-1)[0]
+
+		  const comment = args.length === 3 && type(last) === type('')
+		    ? last.trim()
+		    : ''
+
+		  const result = args.length === 3
+		    ? equality(a, b)
+		    : a === true
+
+		  return [result, comment]
+		}
+
+		function equality(a, b) {
+		  if (type(a) !== type(b)) return false
+
+		  switch(type(a)) {
+		    case type([]):
+
+		      return a.join() === b.join()
+		    case type({}):
+
+		      return JSON.stringify(a) === JSON.stringify(b)
+		    default:
+
+		      return a === b
+		  }
+		}
+
+		function test(title, fn) {
+		  let result;
+
+		  fn((...args) => {
+				try {
+					const [ passing, comment ] = assert(...args)
+
+					result = {
+						comment,
+						passing,
+						title,
+					}
+				} catch (error) {
+					result = {
+						error,
+						title,
+					}
+				}
+		  })
+
+		  allTests.push(result || { empty: true, passing: false, title })
+		}
+
+		try {
+			// source
+		} catch(error) {
+			return error
+		}
+
+		// ...more execution
+		return allTests
+	}
+
+	pipe(pathToEnlightenment)
+		.into(koans => koans.map(name => fetcher(`koans/${name}.js`)))
+		.into(koans => Promise.all(koans).then(init))
+
+	$('.collapse--handle')
+		.on('click', function () {
+			$(this)
+				.closest('.collapse--wrapper')
+				.toggleClass('collapse--closed')
+		})
+}([
+	'basics',
+	// 'nil',
+	'arrays',
+	// 'array_assignment',
+	// 'hashes',
+	// 'strings',
+	// 'methods',
+	// 'control_statements',
+	// 'true_and_false',
+	// 'triangle_project',
+	// 'exceptions',
+	// 'triangle_project_2',
+	// 'iteration',
+	// 'blocks',
+	// 'sandwich_code',
+	// 'scoring_project',
+	// 'classes',
+	// 'dice_project',
+	// 'inheritance',
+	// 'modules',
+	// 'scope',
+	// 'class_methods',
+	// 'message_passing',
+	// 'proxy_object_project',
+	// 'extra_credit',
+]))
