@@ -1,1 +1,3 @@
-// about arrays
+test('Arrays.', assert => {
+  assert(false);
+});

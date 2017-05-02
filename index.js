@@ -29,9 +29,9 @@
 			"Let's make better mistakes tomorrow.",
 			"The harder the struggle the more glorious the triumph.",
 			"The struggle you're in today is developing the strength you need for tomorrow.",
-			"Starve your distractions and feed your focus.",
+			"Starve your distractions, feed your focus.",
 			"The smallest step toward your goal is better than the greatest intention.",
-			"It always seems impossible until it's done.",
+			"Many things seem impossible until they're done.",
 			"To change reality let reality change you.",
 			"We don't learn by doing we learn by reflecting on what we've done.",
 			"A negative mind will never give you a positive life.",
@@ -45,11 +45,49 @@
 	  value: args[0],
 	})
 
-	function change(event) {
+	function begin() {
+		try {
+			koans.active = storage().active
+		} catch (e) {
+			koans.active = koans.list[0].path
+		}
+		koans.editor.on('change', debounce.call(koans.editor, change))
+		koans.editor.setValue(koans.indx[koans.active], 1)
+
+		$(document.body)
+			.addClass('walking-the-path')
+
+		stepAlongThePath()
+	}
+
+	function change() {
 		const value = this.getValue()
 
+		koans.attempts[koans.active][koans.active] =
+			(koans.attempts[koans.active][koans.active] || 0) + 1
 		koans.indx[koans.active] = value
-		runner(value)
+
+		storage(koans)
+
+		const koanIndex = runner(value)
+			.reduce((acc, node, indx) => acc !== false
+				? acc
+				: !node.passing && indx, false)
+
+		stepAlongThePath(koanIndex)
+
+		if (koanIndex === false) {
+			try {
+				koans.active = koans.list[koans.sect.indexOf(koans.active) + 1].path
+				setTimeout(() => koans.editor.setValue(koans.indx[koans.active], 1), 800)
+			} catch (e) {
+				congratulate()
+			}
+		}
+	}
+
+	function congratulate() {
+		throw new Error('verify all koans have been completed')
 	}
 
 	function debounce(fn, delay = 300, global = window) {
@@ -71,57 +109,118 @@
 	}
 
 	function init(list) {
+		koans.attempts = list
+			.reduce((acc, {path}) => (acc[path] = {}, acc), {})
+
 		koans.editor = ace.edit('editor')
 		koans.editor.setTheme('ace/theme/monokai')
 		koans.editor.getSession().setMode('ace/mode/javascript')
 		koans.editor.$blockScrolling = Infinity // silence console warning message
-		koans.editor.on('change', debounce.call(koans.editor, change))
 
+		koans.sect = list.map(koan => koan.path)
 		koans.list = list
 		koans.indx = list
-			.reduce((acc, koan) => {
-				acc[koan.path] = koan.body
+			.reduce((acc, koan) => (acc[koan.path] = koan.body, acc), {})
 
-				return acc
-			}, {})
+		const previousSessionState = storage()
+
+		if (previousSessionState) {
+			koans.attempts = previousSessionState.attempts
+			koans.indx = previousSessionState.indx
+		}
 
 		results()
-	}
-
-	function koansReport({ key, title }, report) {
-		const encouragement = `; is blocking your from enlightenment. ${saySomethingZen()}`
-
-		const message = ({comment, passing, title}) =>
-			title
-				.replace(/\.$/, passing ? '.' : encouragement)
-
-		return `
-			<section class="koan ${key === koans.active ? 'active': ''}">
-				<h3 data-koan="${key}">${title}</h3>
-				${report
-					.map(t => `<div class="test--${t.passing ? 'passing' : 'failing'}">${message(t)}</div>`)
-					.join('')}
-			</section>
-		`
 	}
 
 	function results(report) {
 		const include = ({ key }) =>
 			key === koans.active ? report : []
 
-		pipe(koans.list)
-			.into(list => list
-				.map(koan => ({ key: koan.path, title: koanTitle(koan.path) }))
-				.map(item => koansReport(item, include(item))))
-			.into(koans => $('.results').empty().append(koans))
+		const output = koans.list
+			.map(koan => ({ key: koan.path, title: koanTitle(koan.path) }))
+			.map(item => sectionReport(item, include(item)))
+
+		$('.results').empty().append(output)
+
+		return report
 	}
 
 	function runner(source) {
-		pipe(testScope.toString())
+
+		return pipe(testScope.toString())
 			.into(fn => fn.split(/\n/).slice(1, -1).join('\n'))
 			.into(body => body.replace('// source', source))
 			.into(body => new Function(body))
 			.into(fn => results(fn()))
+			.value
+	}
+
+	function section(node) {
+		koans.active = node.dataset.koan
+		koans.editor.setValue(koans.indx[koans.active], 1)
+	}
+
+	function sectionReport({ key, title }, report) {
+		const regex = /(.*)\./
+
+		const awareness = str =>
+			str.replace(regex, '"$1" has expanded your awareness.')
+
+		const karma = str =>
+			str.replace(regex, '"$1", has damaged your karma.')
+
+		const status =
+			`#comment
+			<p>You have not yet reached enlightenment...</p>
+			<blockquote><em>${saySomethingZen()}</em></blockquote>
+			<p>... meditate on the following code:</p>
+			<p>#title</p>`
+
+		const message = ({comment, passing, title}) =>
+			passing
+				? `<span class="passing-test-title">${awareness(title)}</span>`
+				: status
+					.replace('#comment', comment ? `<p>${karma(comment)}</p>` : '')
+					.replace('#title', title)
+
+		const div = (test, indx, orig) => {
+			const cssClass = test.passing
+				? 'test--passing'
+				: 'test--failing'
+
+			return `<div class="${cssClass}">
+				<span class="test-index"><small>${indx + ' of ' + orig.length}</small></span>
+				${message(test)}
+			</div>`
+		}
+
+		return `
+			<section class="koan${key === koans.active ? ' active': ''}">
+				<h3 data-koan="${key}">${title}</h3>
+				<div class="slider">${report.map(div).join('')}</div>
+			</section>
+		`
+	}
+
+	function stepAlongThePath(num) {
+		const step = koans.active
+			.replace(/\.js$/, '')
+
+		window.history.pushState(null, koanTitle(koans.active), `#/${step}/${num || 0}`)
+	}
+
+	function storage(value, key = 'JavaScript Koans') {
+		if (value) {
+			const copy = {
+				active: value.active,
+				attempts: value.attempts,
+				indx: value.indx,
+			}
+
+			window.localStorage.setItem(key, JSON.stringify(copy))
+		}
+
+		return JSON.parse(window.localStorage.getItem(key))
 	}
 
 	function testScope() {
@@ -135,7 +234,7 @@
 		  const [a, b] = args
 		  const last = args.slice(-1)[0]
 
-		  const comment = args.length === 3 && type(last) === type('')
+		  const comment = args.length === 3 || type(last) === type('')
 		    ? last.trim()
 		    : ''
 
@@ -200,23 +299,12 @@
 		.into(koans => Promise.all(koans).then(init))
 
 	$('.btn-begin')
-		.on('click', function () {
-			$(document.body).addClass('walking-the-path')
-			$('.content > section').slideUp()
-			$(this).remove()
+		.on('click', begin)
 
-			const koan = koans.list[0].path
+	$(document.body)
+		.on('click', '.koan [data-koan]', event => section(event.target))
 
-			koans.active = koan
-			koans.editor.setValue(koans.indx[koan], 1)
-
-			// http://koans#/{name}/{number}
-			// make section headings navigate to that "file"
-			// editing the koan to make it pass moves to the next one
-			// check for repeat tries and change messaging; the first execution should
-			// not seem like an attempt but after changing something should
-			throw new Error('Make navigation via the URL work with hash-values')
-		})
+	// fix alignment (CSS) of # of ##
 }([
 	'basics',
 	// 'nil',
