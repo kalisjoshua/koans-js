@@ -45,9 +45,9 @@
 	  value: args[0],
 	})
 
-	function begin() {
+	function begin(active) {
 		try {
-			koans.active = storage().active
+			koans.active = active || storage().active
 		} catch (e) {
 			koans.active = koans.list[0].path
 		}
@@ -130,6 +130,13 @@
 		}
 
 		results()
+
+		const hashKoan = `${(window.location.hash
+			.match(/#\/(koans\/[^\/]+)\/\d+$/) || [])[1]}.js`
+
+		if (hashKoan && koans.indx[hashKoan]) {
+			begin(hashKoan)
+		}
 	}
 
 	function results(report) {
@@ -174,7 +181,7 @@
 			<p>You have not yet reached enlightenment...</p>
 			<blockquote><em>${saySomethingZen()}</em></blockquote>
 			<p>... meditate on the following code:</p>
-			<p>#title</p>`
+			<code>#title</code>`
 
 		const message = ({comment, passing, title}) =>
 			passing
@@ -189,8 +196,8 @@
 				: 'test--failing'
 
 			return `<div class="${cssClass}">
-				<span class="test-index"><small>${indx + ' of ' + orig.length}</small></span>
-				${message(test)}
+				<div class="test-title">${message(test)}</div>
+				<small class="test-index">${indx + ' of ' + orig.length}</small>
 			</div>`
 		}
 
@@ -299,12 +306,10 @@
 		.into(koans => Promise.all(koans).then(init))
 
 	$('.btn-begin')
-		.on('click', begin)
+		.on('click', () => begin())
 
 	$(document.body)
 		.on('click', '.koan [data-koan]', event => section(event.target))
-
-	// fix alignment (CSS) of # of ##
 }([
 	'basics',
 	// 'nil',
