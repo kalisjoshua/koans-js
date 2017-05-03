@@ -46,6 +46,11 @@ main > * { flex: 1 0 50%; }
 
 .code { flex: 1 1 50%; }
 
+.congratulations {
+  opacity: 0;
+  display: none;
+}
+
 .content {
   flex: 1 1 50%;
   height: 100%;
@@ -114,6 +119,24 @@ h6 { font-size: 1em; }
 .walking-the-path h5,
 .walking-the-path h6 { font-weight: 100; margin: 0; }
 
-.walking-the-path h1 { font-size: 1em; transition: 200ms; }
+.walking-the-path h1 { font-size: 1.2em; transition: 200ms; }
 
-.walking-the-path h2 { display: none; }
+.walking-the-path .intro h2 { display: none; }
+
+@keyframes fadeIn {
+  0% { opacity: 0; }
+  100% { opacity: 1; }
+}
+
+.finished h3 { font-size: 1em; transition: 1s; }
+
+.finished .content > .congratulations {
+  animation: 1s 400ms fadeIn;
+  animation-fill-mode: forwards;
+  display: block;
+}
+
+.finished .koan > *:not([data-koan]) {
+  opacity: 0;
+  transition: 1s;
+}

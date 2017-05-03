@@ -69,12 +69,18 @@
 
 		storage(koans)
 
-		const koanIndex = runner(value)
+		const koanIndex = runner(value, results)
 			.reduce((acc, node, indx) => acc !== false
 				? acc
 				: !node.passing && indx, false)
 
 		stepAlongThePath(koanIndex)
+
+		if (koans.sectionSwitch) {
+			delete koans.sectionSwitch
+
+			return
+		}
 
 		if (koanIndex === false) {
 			try {
@@ -87,10 +93,27 @@
 	}
 
 	function congratulate() {
-		// const finalResult = koans.list
-		// 	.map(({body}) => runner(body))
-		console.log('finalResult')
-		// throw new Error('verify all koans have been completed')
+		const karmaBlocked = koans.sect
+			.reduce((acc, name) => {
+
+				return acc || (runner(koans.indx[name])
+					.every(koan => koan.passing) ? acc : name)
+			}, '')
+
+		if (karmaBlocked) {
+			koans.active = karmaBlocked
+			storage(koans)
+			koans.editor.setValue(koans.indx[koans.active], 1)
+			console.log(`Your karma is still blocked by "${karmaBlocked}".`)
+		} else {
+			setTimeout(() => {
+				$(document.body).addClass('finished')
+				$('.test--passing')
+					.delay()
+					.slideUp()
+			}, 400)
+			console.log('Congratulations.')
+		}
 	}
 
 	function debounce(fn, delay = 300, global = window) {
@@ -119,6 +142,7 @@
 		koans.editor.setTheme('ace/theme/monokai')
 		koans.editor.getSession().setMode('ace/mode/javascript')
 		koans.editor.$blockScrolling = Infinity // silence console warning message
+		koans.editor.setValue('// Every journey begins with a single step.', 1)
 
 		koans.sect = list.map(koan => koan.path)
 		koans.list = list
@@ -155,21 +179,20 @@
 		return report
 	}
 
-	function runner(source) {
+	function runner(source, report) {
 
 		return pipe(testScope.toString())
 			.into(fn => fn.split(/\n/).slice(1, -1).join('\n'))
 			.into(body => body.replace('// source', source))
 			.into(body => new Function(body))
-			.into(fn => results(fn()))
+			.into(fn => (report ? report(fn()) : fn()))
 			.value
 	}
 
 	function section(node) {
+		koans.sectionSwitch = true
 		koans.active = node.dataset.koan
-		koans.editor.selectAll()
-		koans.editor.insert(koans.indx[koans.active])
-		koans.editor.focus()
+		koans.editor.setValue(koans.indx[koans.active], 1)
 	}
 
 	function sectionReport({ key, title }, report) {
@@ -209,7 +232,7 @@
 		return `
 			<section class="koan${key === koans.active ? ' active': ''}">
 				<h3 data-koan="${key}">${title}</h3>
-				<div class="slider">${report.map(div).join('')}</div>
+				${report.map(div).join('')}
 			</section>
 		`
 	}
