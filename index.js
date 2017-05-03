@@ -252,14 +252,14 @@
 				indx: value.indx,
 			}
 
-			window.localStorage.setItem(key, JSON.stringify(copy))
+			// window.localStorage.setItem(key, JSON.stringify(copy))
 		}
 
 		return JSON.parse(window.localStorage.getItem(key))
 	}
 
 	function testScope() {
-		const __ = void 0
+		const __ = "FILL_ME_IN"
 		const allTests = []
 
 		const slice = Function.prototype.call.bind(Array.prototype.slice)
@@ -283,6 +283,7 @@
 		function equality(a, b) {
 		  if (type(a) !== type(b)) return false
 
+			console.log(a, b)
 		  switch(type(a)) {
 		    case type([]):
 
@@ -299,8 +300,8 @@
 		function test(title, fn) {
 		  let result;
 
-		  fn((...args) => {
-				try {
+			try {
+			  fn((...args) => {
 					const [ passing, comment ] = assert(...args)
 
 					result = {
@@ -308,13 +309,13 @@
 						passing,
 						title,
 					}
-				} catch (error) {
-					result = {
-						error,
-						title,
-					}
+			  })
+			} catch (error) {
+				result = {
+					error,
+					title,
 				}
-		  })
+			}
 
 		  allTests.push(result || { empty: true, passing: false, title })
 		}
@@ -340,7 +341,9 @@
 		.on('click', '.koan [data-koan]', event => section(event.target))
 }([
 	'basics',
-	// 'nil',
+	'assignment', 				// added
+	// 'types', 							// added
+	// 'null', 						// non-applicable
 	'arrays',
 	// 'array_assignment',
 	// 'hashes',
@@ -364,4 +367,5 @@
 	// 'message_passing',
 	// 'proxy_object_project',
 	// 'extra_credit',
+	// 'functional' 		// added
 ]))
