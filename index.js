@@ -87,7 +87,10 @@
 	}
 
 	function congratulate() {
-		throw new Error('verify all koans have been completed')
+		// const finalResult = koans.list
+		// 	.map(({body}) => runner(body))
+		console.log('finalResult')
+		// throw new Error('verify all koans have been completed')
 	}
 
 	function debounce(fn, delay = 300, global = window) {
@@ -164,7 +167,9 @@
 
 	function section(node) {
 		koans.active = node.dataset.koan
-		koans.editor.setValue(koans.indx[koans.active], 1)
+		koans.editor.selectAll()
+		koans.editor.insert(koans.indx[koans.active])
+		koans.editor.focus()
 	}
 
 	function sectionReport({ key, title }, report) {
