@@ -1,21 +1,25 @@
+// Quoting strings in JavaScript is flexible and complicated. Either, double or
+// single, can be used to enclose a string but which is used will determine what
+// type will be easily included in the string itself. When starting with one
+// type if the string itself needs to include that type, all instances of that
+// type in the string will need to be escaped.
+//
+// Some examples will probably help; each of these are valid strings:
+
+"Single-quote (') inside double-quotes don't need to be excaped.";
+'Single-quote (\') inside single-quotes need to be excaped.';
+
+'Double-quotes ("") inside single-quotes don\'t need to be escaped.';
+"Double-quotes (\"\") inside single-quotes need to be escaped.";
+
+// If these rules arent' followed they will result in syntax errors and the code
+// will not work because the JavaScript interpreter wont understand the code.
+
 test("Strings can be quoted with either double or single quotes", assert => {
   const doubleQuoted = "Hello, world.";
   const singleQuoted = 'Hello, world.';
 
   assert(__, doubleQuoted === singleQuoted, "String values defined with different quotes.");
-});
-
-test("Quotes in strings", assert => {
-  "Single-quote (') inside double-quotes don't need to be excaped.";
-  'Single-quote (\') inside single-quotes need to be excaped.';
-
-  'Double-quotes ("") inside single-quotes don\'t need to be escaped.';
-  "Double-quotes (\"\") inside single-quotes don't need to be escaped.";
-
-  // 'Fix this string, and you don't have to "worry" about the assert below';
-  // "The string above has one "error" while this string has two.";
-
-  assert(true, "");
 });
 
 test("Concatenating strings with `+`", assert => {
