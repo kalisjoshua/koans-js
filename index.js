@@ -184,7 +184,7 @@
 		return pipe(testScope.toString())
 			.into(fn => fn.split(/\n/).slice(1, -1).join('\n'))
 			.into(body => body.replace('// source', source))
-			.into(body => new Function(body))
+			.into(syntaxTrap)
 			.into(fn => (report ? report(fn()) : fn()))
 			.value
 	}
@@ -258,6 +258,16 @@
 		return JSON.parse(window.localStorage.getItem(key))
 	}
 
+	function syntaxTrap(body) {
+		try {
+
+			return new Function(body)
+		} catch (e) {
+
+			return () => [{ error: true }]
+		}
+	}
+
 	function testScope() {
 		const __ = "FILL_ME_IN"
 		const allTests = []
@@ -283,7 +293,6 @@
 		function equality(a, b) {
 		  if (type(a) !== type(b)) return false
 
-			console.log(a, b)
 		  switch(type(a)) {
 		    case type([]):
 
@@ -320,11 +329,7 @@
 		  allTests.push(result || { empty: true, passing: false, title })
 		}
 
-		try {
-			// source
-		} catch(error) {
-			return error
-		}
+		// source
 
 		// ...more execution
 		return allTests
@@ -341,14 +346,14 @@
 		.on('click', '.koan [data-koan]', event => section(event.target))
 }([
 	'basics',
-	'assignment', 				// added
-	// 'types', 							// added
-	// 'null', 						// non-applicable
+	'assignment', 					// added
+	// 'types', 						// added
+	// 'null', 							// non-applicable
 	'arrays',
-	// 'array_assignment',
-	// 'hashes',
-	// 'strings',
-	// 'methods',
+	// 'array_assignment',	// non-applicable
+	'objects',							// hashes
+	'strings',
+	'functions',						// renamed; was 'methods'
 	// 'control_statements',
 	// 'true_and_false',
 	// 'triangle_project',
@@ -367,5 +372,6 @@
 	// 'message_passing',
 	// 'proxy_object_project',
 	// 'extra_credit',
-	// 'functional' 		// added
+	// 'functional', 				// added
+	// 'context',						// added
 ]))
