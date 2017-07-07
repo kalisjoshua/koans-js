@@ -35,6 +35,18 @@
 			"To change reality let reality change you.",
 			"We don't learn by doing we learn by reflecting on what we've done.",
 			"A negative mind will never give you a positive life.",
+			"A closed mind is already defeated.",
+ 			"A disciplined mind is your most dependable ally.",
+ 			"A warrior's greatest weapon... is patience.",
+ 			"Consider only victory. Make defeat an impossibility in your mind.",
+ 			"Adversity is an opportunity for change.",
+ 			"Repetition is the path to mastery.",
+ 			"Excellence is its own reward.",
+ 			"Do not be discouraged, everyone begins in ignorance.",
+ 			"Those who think they are all-knowing know nothing of what they do not.",
+ 			"Life is more than a series of ones and zeroes.",
+ 			"Every rooster crows in its own pen.",
+ 			"Walk along the path to enlightenment."
 		]
 
 		return () => quotes[parseInt(Math.random() * quotes.length, 10)]
