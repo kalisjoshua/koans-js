@@ -38,7 +38,7 @@ test("Template literals", assert => {
 
   // These are regular strings
 
-  const command = "Be execllent";
+  const command = "Be excellent";
   const subject = "to one another";
 
   // Template literals also allow for "interpolation" of variables; what else
@@ -52,7 +52,7 @@ test("Template literals", assert => {
 test("Strings are like Arrays... a little bit.", assert => {
   const that = "Life";
 
-  assert(__, str.slice(1, 3), "There is _this_ in _that_.");
+  assert(__, that.slice(1, 3), "There is _this_ in _that_.");
 });
 
 test("You can count words by splitting", assert => {
